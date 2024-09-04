@@ -1,1 +1,1 @@
-## Fine-grained GPU Scheduler for Autonomous Driving System
+## Enabling Efficient GPU Resource Allocation and Real-time Scheduling for Autonomous Driving System
