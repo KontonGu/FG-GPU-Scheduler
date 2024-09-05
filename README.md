@@ -29,7 +29,6 @@ cd apollo
 
 进入项目目录后，启动 Cyber 的 Docker 容器：
 
-```bash
 bash docker/scripts/cyber_start.sh
 bash docker/scripts/cyber_into.sh
 
