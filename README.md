@@ -43,9 +43,32 @@ bazel build third_party/gpus/...
 ```
 ### 4. 安装 Opencv 支持
 
-运行以下脚本来安装 GPU 支持：
+运行以下脚本来安装 Opencv 支持：
 
 ```bash
 bash docker/build/installers/install_opencv.sh
 bazel build third_party/opencv/...  
 ```
+### 5. 安装 libnuma1 包
+```bash
+sudo apt-get install libnuma1
+sudo ldconfig  
+```
+
+### 6. Install glog Library
+```bash
+sudo apt-get update
+sudo apt-get install libgoogle-glog-dev 
+```
+
+### 7. 把case_study目录放在apollo/cyber下
+首先编译case_study
+```bash
+bazel build cyber/case_study/...
+```
+此时可能会出现文件缺失的情况，需要执行以下操作
+```bash
+cp /usr/local/cuda-11.1/lib64/libcudart.so /apollo/bazel-out/k8-fastbuild/bin/_solib_k8/_U@local_Uconfig_Ucuda_S_Scuda_Ccudart___Ulocal_Uconfig_Ucuda_Scuda_Scuda_Slib
+```
+
+
