@@ -24,3 +24,12 @@
 ```bash
 git clone https://github.com/ApolloAuto/apollo.git
 cd apollo
+
+### 2. 启动 Cyber 容器
+
+进入项目目录后，启动 Cyber 的 Docker 容器：
+
+```bash
+bash docker/scripts/cyber_start.sh
+bash docker/scripts/cyber_into.sh
+
