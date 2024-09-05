@@ -33,3 +33,19 @@ cd apollo
 bash docker/scripts/cyber_start.sh
 bash docker/scripts/cyber_into.sh
 ```
+### 3. 安装 GPU 支持
+
+运行以下脚本来安装 GPU 支持：
+
+```bash
+bash docker/build/installers/install_gpu_support.sh
+bazel build third_party/gpus/...  
+```
+### 4. 安装 Opencv 支持
+
+运行以下脚本来安装 GPU 支持：
+
+```bash
+bash docker/build/installers/install_opencv.sh
+bazel build third_party/opencv/...  
+```
