@@ -1,5 +1,3 @@
-## Enabling Efficient GPU Resource Allocation and Real-time Scheduling for Autonomous Driving System
-
 # 在 Cyber RT 中运行任务链
 
 ## 简介
