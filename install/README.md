@@ -1,44 +1,44 @@
-# 在 Cyber RT 中运行任务链
+# Running Task Chains in Cyber RT
 
-## 简介
+## Introduction
 
-该项目展示了如何在 [Apollo Cyber RT](https://github.com/ApolloAuto/apollo) 中创建并运行一个任务链。Cyber RT 是 Apollo 框架中的实时通信基础设施，支持模块化开发并允许通过任务链进行模块之间的异步通信。本指南将引导你从环境配置到任务链的运行。
+This project demonstrates how to create and run a task chain in Apollo Cyber RT. Cyber RT is the real-time communication infrastructure in the Apollo framework. It supports modular development and allows asynchronous communication between modules through task chains. This guide will walk you through the process from environment setup to running the task chain.
 
-## 前提条件
+## Prerequisites
 
-在运行任务链之前，请确保你已经安装了以下依赖：
+Before running the task chain, make sure you have the following dependencies installed:
 
-- Ubuntu 18.04 或更高版本
-- Apollo 安装（请参考 Apollo 官方安装文档）
-- Docker（用于启动 Apollo 容器）
-- 基本的 C++ 和 Python 开发环境
+Ubuntu 18.04 or later
+Apollo installation (refer to the official Apollo installation documentation)
+Docker (to start the Apollo container)
+Basic C++ and Python development environment
 
-## 安装和配置
+## Installation and Setup
 
-### 1. 克隆 Apollo 仓库
+### 1. Clone the Apollo Repository
 
-首先，克隆 Apollo 仓库并进入项目目录：
+First, clone the Apollo repository and navigate to the project directory:
 
 ```bash
 git clone https://github.com/ApolloAuto/apollo.git
 cd apollo
 ```
 
-### 2. 启动 Cyber 容器
+### 2. Start the Cyber Container
 
-进入项目目录后，启动 Cyber 的 Docker 容器：
+Once inside the project directory, start the Cyber Docker container:
 ```bash
 bash docker/scripts/dev_start.sh 
 bash docker/scripts/dev_into.sh
 ```
 
-### 3. 编译 case_study
+### 3. Build case_study
 
 ```bash
 bazel build cyber/case_study/...
 ```
 
-### 4. 运行 case_study
+### 4. Run case_study
 
 ```bash
 cyber_launch start cyber/case_study/case_study.launch
