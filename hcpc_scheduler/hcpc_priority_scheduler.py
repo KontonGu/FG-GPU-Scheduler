@@ -338,12 +338,20 @@ def main():
     # --- 输出 GPU 最大分区数量 ---
     max_gpu_partition = max(gpu_counts.values()) if gpu_counts else 0
     print(f"\nGPU最大分区数量: {max_gpu_partition}")
+
+    # --- 输出 GPU任务集合 ---
+    all_gpu_tasks = {node for node in all_nodes if task_attr.get(node, {}).get('task_type') == 'GPU'}
+    print("\n所有 GPU 任务集合(做为GPU分区问题的输入):")
+    print(all_gpu_tasks)
     
     # --- 发现 GPU 任务之间的依赖关系 ---
     gpu_deps = find_gpu_dependencies(reverse_graph, task_attr, all_nodes)
+    print("\nGPU任务之间的依赖关系(做为GPU分区问题的输入):")
+    print(gpu_deps)
     print("\nGPU任务之间的依赖关系:")
     for gpu, deps in gpu_deps.items():
         print(f"  GPU任务 {gpu} 依赖于 GPU任务: {deps}")
+
     
     # --- 打印独立的 GPU 任务 ---
     all_gpu_tasks = {node for node in all_nodes if task_attr.get(node, {}).get('task_type') == 'GPU'}
