@@ -84,7 +84,7 @@ The algorithm outputs node weights, critical paths, GPU partitions, GPU task dep
 
 ## Output Example / 输出示例
 ```python
-节点权重:
+======== 节点权重 (node_weight) ========
   节点 1: 0
   节点 2: 1
   节点 3: 5
@@ -109,90 +109,92 @@ The algorithm outputs node weights, critical paths, GPU partitions, GPU task dep
   节点 22: 9
   节点 23: 0
 
-关键路径: [1, 3, 10, 13, 18, 20, 23]
-项目总工期: 35
-所有节点: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23}
+======== 关键路径 & 总工期 ========
+  关键路径: [1, 3, 10, 13, 18, 20, 23]
+  总工期:   35
 
-合并后的 Capacity Providers (CP groups):
+======== 合并后的 Capacity Providers (CP groups) ========
   CP组 0: [1, 3]
   CP组 1: [10]
   CP组 2: [13]
   CP组 3: [18, 20]
   CP组 4: [23]
 
-各 CP 对应的 F 与 G:
-  CP组 0 (包含节点 [1, 3]):
+======== 各 CP 对应的 F 与 G ========
+  CP组 0:
     F(CP_0) = {4, 5}
     G(CP_0) = {2, 6, 7, 9, 11, 16}
------------
-  CP组 1 (包含节点 [10]):
+  CP组 1:
     F(CP_1) = {8, 9, 2, 6}
     G(CP_1) = {7, 11, 12, 16}
------------
-  CP组 2 (包含节点 [13]):
+  CP组 2:
     F(CP_2) = {11, 7}
     G(CP_2) = {16, 12, 14}
------------
-  CP组 3 (包含节点 [18, 20]):
+  CP组 3:
     F(CP_3) = {12, 14, 15, 16, 17, 19, 21, 22}
     G(CP_3) = set()
------------
-  CP组 4 (包含节点 [23]):
+  CP组 4:
     F(CP_4) = set()
     G(CP_4) = set()
------------
-CP组 0 的潜在并行区域 R = {1, 2, 3, 4, 5, 6, 7, 9, 11, 16}
-CP组 1 的潜在并行区域 R = {2, 6, 7, 8, 9, 10, 11, 12, 16}
-CP组 2 的潜在并行区域 R = {16, 7, 11, 12, 13, 14}
-CP组 3 的潜在并行区域 R = {12, 14, 15, 16, 17, 18, 19, 20, 21, 22}
-CP组 4 的潜在并行区域 R = {23}
 
-各 R 中 GPU 任务数量统计:
+======== 每个 CP组 的潜在并行区域 (R) ========
+  CP组 0 的 R: {1, 2, 3, 4, 5, 6, 7, 9, 11, 16}
+  CP组 1 的 R: {2, 6, 7, 8, 9, 10, 11, 12, 16}
+  CP组 2 的 R: {16, 7, 11, 12, 13, 14}
+  CP组 3 的 R: {12, 14, 15, 16, 17, 18, 19, 20, 21, 22}
+  CP组 4 的 R: {23}
+
+======== 各 R 中的 GPU 任务数量统计 ========
   CP组 0 的 R 中 GPU 任务数量: 5
   CP组 1 的 R 中 GPU 任务数量: 6
   CP组 2 的 R 中 GPU 任务数量: 5
   CP组 3 的 R 中 GPU 任务数量: 7
   CP组 4 的 R 中 GPU 任务数量: 0
 
-GPU最大分区数量: 7
+======== GPU 最大分区数量 ========
+  7
 
-所有 GPU 任务集合(做为GPU分区问题的输入):
-{3, 5, 7, 8, 10, 11, 12, 14, 16, 18, 19, 21, 22}
+======== 所有 GPU 任务集合 ========
+  {3, 5, 7, 8, 10, 11, 12, 14, 16, 18, 19, 21, 22}
 
-GPU任务之间的依赖关系(做为GPU分区问题的输入):
-{7: {3, 5}, 8: {5}, 10: {3, 5}, 11: {3, 5, 7}, 12: {10, 3, 5}, 14: {8, 3, 5}, 18: {3, 5, 7, 8, 10, 11}, 19: {3, 5, 7, 8, 10, 11, 14}, 21: {3, 5, 7, 8, 10, 11, 18}, 22: {3, 5, 7, 8, 10, 11, 12, 14, 16, 18}}
+======== GPU 依赖关系 (GPU -> GPU祖先) ========
+  GPU 任务 7 依赖的 GPU 祖先: {3, 5}
+  GPU 任务 8 依赖的 GPU 祖先: {5}
+  GPU 任务 10 依赖的 GPU 祖先: {3, 5}
+  GPU 任务 11 依赖的 GPU 祖先: {3, 5, 7}
+  GPU 任务 12 依赖的 GPU 祖先: {10, 3, 5}
+  GPU 任务 14 依赖的 GPU 祖先: {8, 3, 5}
+  GPU 任务 18 依赖的 GPU 祖先: {3, 5, 7, 8, 10, 11}
+  GPU 任务 19 依赖的 GPU 祖先: {3, 5, 7, 8, 10, 11, 14}
+  GPU 任务 21 依赖的 GPU 祖先: {3, 5, 7, 8, 10, 11, 18}
+  GPU 任务 22 依赖的 GPU 祖先: {3, 5, 7, 8, 10, 11, 12, 14, 16, 18}
 
-GPU任务之间的依赖关系:
-  GPU任务 7 依赖于 GPU任务: {3, 5}
-  GPU任务 8 依赖于 GPU任务: {5}
-  GPU任务 10 依赖于 GPU任务: {3, 5}
-  GPU任务 11 依赖于 GPU任务: {3, 5, 7}
-  GPU任务 12 依赖于 GPU任务: {10, 3, 5}
-  GPU任务 14 依赖于 GPU任务: {8, 3, 5}
-  GPU任务 18 依赖于 GPU任务: {3, 5, 7, 8, 10, 11}
-  GPU任务 19 依赖于 GPU任务: {3, 5, 7, 8, 10, 11, 14}
-  GPU任务 21 依赖于 GPU任务: {3, 5, 7, 8, 10, 11, 18}
-  GPU任务 22 依赖于 GPU任务: {3, 5, 7, 8, 10, 11, 12, 14, 16, 18}
+======== 独立GPU任务 (无GPU祖先) ========
+  {16, 3, 5}
 
-独立的 GPU 任务:
-  GPU任务 16
-  GPU任务 3
-  GPU任务 5
+======== 独立GPU任务的最早开始时间 (initial_time) ========
+initial_time = {
+    3: 0,
+    5: 0,
+    16: 0,
+}
 
-CPU任务优先度分配结果:
-  CPU任务 1 的优先度: 100
-  CPU任务 2 的优先度: 94
-  CPU任务 4 的优先度: 96
-  CPU任务 6 的优先度: 95
-  CPU任务 9 的优先度: 93
-  CPU任务 13 的优先度: 99
-  CPU任务 15 的优先度: 91
-  CPU任务 17 的优先度: 92
-  CPU任务 20 的优先度: 98
-  CPU任务 23 的优先度: 97
+======== 两GPU间"最大CPU路径" 结构性数据 (gpu_deps -> gpu_path_map) ========
+  {7: {3: {'cpu_path_length': 0, 'cpu_nodes': []}, 5: {'cpu_path_length': 0, 'cpu_nodes': []}}, 8: {5: {'cpu_path_length': 0, 'cpu_nodes': []}}, 10: {3: {'cpu_path_length': 0, 'cpu_nodes': []}, 5: {'cpu_path_length': 0, 'cpu_nodes': []}}, 11: {3: {'cpu_path_length': 0, 'cpu_nodes': []}, 5: {'cpu_path_length': 0, 'cpu_nodes': []}, 7: {'cpu_path_length': 0, 'cpu_nodes': []}}, 12: {3: {'cpu_path_length': 0, 'cpu_nodes': []}, 5: {'cpu_path_length': 0, 'cpu_nodes': []}, 10: {'cpu_path_length': 0, 'cpu_nodes': []}}, 14: {3: {'cpu_path_length': 2, 'cpu_nodes': [9]}, 5: {'cpu_path_length': 0, 'cpu_nodes': []}, 8: {'cpu_path_length': 0, 'cpu_nodes': []}}, 18: {3: {'cpu_path_length': 3, 'cpu_nodes': [9, 13]}, 5: {'cpu_path_length': 1, 'cpu_nodes': [13]}, 7: {'cpu_path_length': 0, 'cpu_nodes': []}, 8: {'cpu_path_length': 1, 'cpu_nodes': [13]}, 10: {'cpu_path_length': 1, 'cpu_nodes': [13]}, 11: {'cpu_path_length': 0, 'cpu_nodes': []}}, 19: {3: {'cpu_path_length': 12, 'cpu_nodes': [9, 13, 17]}, 5: {'cpu_path_length': 10, 'cpu_nodes': [13, 17]}, 7: {'cpu_path_length': 9, 'cpu_nodes': [17]}, 8: {'cpu_path_length': 10, 'cpu_nodes': [13, 17]}, 10: {'cpu_path_length': 10, 'cpu_nodes': [13, 17]}, 11: {'cpu_path_length': 9, 'cpu_nodes': [17]}, 14: {'cpu_path_length': 9, 'cpu_nodes': [17]}}, 21: {3: {'cpu_path_length': 3, 'cpu_nodes': [9, 13]}, 5: {'cpu_path_length': 1, 'cpu_nodes': [13]}, 7: {'cpu_path_length': 0, 'cpu_nodes': []}, 8: {'cpu_path_length': 1, 'cpu_nodes': [13]}, 10: {'cpu_path_length': 1, 'cpu_nodes': [13]}, 11: {'cpu_path_length': 0, 'cpu_nodes': []}, 18: {'cpu_path_length': 0, 'cpu_nodes': []}}, 22: {3: {'cpu_path_length': 12, 'cpu_nodes': [9, 13, 17]}, 5: {'cpu_path_length': 10, 'cpu_nodes': [13, 17]}, 7: {'cpu_path_length': 9, 'cpu_nodes': [17]}, 8: {'cpu_path_length': 10, 'cpu_nodes': [13, 17]}, 10: {'cpu_path_length': 10, 'cpu_nodes': [13, 17]}, 11: {'cpu_path_length': 9, 'cpu_nodes': [17]}, 12: {'cpu_path_length': 4, 'cpu_nodes': [15]}, 14: {'cpu_path_length': 9, 'cpu_nodes': [17]}, 16: {'cpu_path_length': 0, 'cpu_nodes': []}, 18: {'cpu_path_length': 0, 'cpu_nodes': []}}}
 
+======== CPU 任务优先度分配结果 ========
+  CPU任务 1 => 优先度 100
+  CPU任务 2 => 优先度 94
+  CPU任务 4 => 优先度 96
+  CPU任务 6 => 优先度 95
+  CPU任务 9 => 优先度 93
+  CPU任务 13 => 优先度 99
+  CPU任务 15 => 优先度 91
+  CPU任务 17 => 优先度 92
+  CPU任务 20 => 优先度 98
+  CPU任务 23 => 优先度 97
 
----
+======== 所有输出完毕 ========
 ```
 ## Usage / 使用方法
 

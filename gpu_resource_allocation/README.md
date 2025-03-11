@@ -10,15 +10,27 @@ This script is designed for scheduling multiple tasks on a GPU. It uses **piecew
 ## 使用步骤（Usage Instructions）
 
 1. **从 `hcpc_priority_scheduler.py` 获取数据**  
-   - 获取 GPU 任务列表 `tasks`、最大并行分区数 `partitions` 以及 GPU 任务依赖关系 `gpu_deps`。  
+   - 获取 GPU 任务列表 `tasks`、最大并行分区数 `partitions` 、独立GPU任务的`initial_time` 以及 GPU 任务依赖关系 `gpu_deps`。  
    - 在本脚本中，将这些数据分别填入对应的变量，如示例所示：
-     ```python
-     tasks = [2, 5, 7]        # 从 hcpc_priority_scheduler.py 生成的 GPU tasks 集合
-     partitions = [1, 2]      # GPU 最大并行分区
-     gpu_deps = {
-         7: {5}               # 依赖关系链表
+    ```python
+    # 从 hcpc_priority_scheduler.py 生成的 GPU tasks 集合
+    tasks = [2, 5, 7]        
+
+    # GPU 最大并行分区（这里为2）
+    partitions = [1, 2]      
+
+    #某些 独立的GPU 任务需要指定初始时间，可在 `initial_time` 中进行设定
+    initial_time = {
+         2: 0,
+         5: 0,
+         7: 0
      }
-     ```
+    # 依赖关系链表，后续会生成例如S[7] >= E[5] + cpu_path_length(两个GPU之间最长的CPU路径)
+    gpu_deps = {
+        7: {5:{'cpu_path_length': 0, 'cpu_nodes': []}}               
+    }
+
+    ```
    - **English**: Retrieve the GPU task list (`tasks`), the maximum parallel partitions (`partitions`), and the GPU task dependencies (`gpu_deps`) from `hcpc_priority_scheduler.py`. Then, place these datasets into the corresponding variables in this script, as shown in the example above.
 
 2. **填入 GPU 任务的 Profiling 数据**  
@@ -31,15 +43,8 @@ This script is designed for scheduling multiple tasks on a GPU. It uses **piecew
      }
      ```
    - 这里可根据每个任务在 1~40 个 SM(TPC) 时的实际测试或测算值进行填充。  
-   - 若某些 GPU 任务需要指定初始时间，可在 `initial_time` 中进行设定；如果不需要或没有限制，则可统一设为 0：
-     ```python
-     initial_time = {
-         2: 0,
-         5: 0,
-         7: 0
-     }
-     ```
-   - **English**: Insert profiling data for each GPU task, detailing how long it takes to run on different numbers of SMs. Each entry in `f_data` is a list of `(SM_count, runtime)` tuples. If certain GPU tasks require a specific earliest start time, configure them in `initial_time`; otherwise, you can set them to 0 by default.
+
+   - **English**: Insert profiling data for each GPU task, detailing how long it takes to run on different numbers of SMs. Each entry in `f_data` is a list of `(SM_count, runtime)` tuples.
 
 3. **设置 `M` 为在满 SM 下（如 40 SM）的串行运行总时间**  
    - 首先，根据 `f_data` 中的 `(40, runtime)` 信息，为每个任务在 **SM=40** 的情况累加出其运行时间总和，得到 `sum_serial_40`。  

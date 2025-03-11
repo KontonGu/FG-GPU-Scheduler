@@ -38,7 +38,9 @@ initial_time = {
 # Dependency dictionary: e.g., task 7 depends on task 5
 # ========================
 gpu_deps = {
-    7: {5}
+  7: {
+      5: {'cpu_path_length': 0, 'cpu_nodes': []},
+  }
 }
 
 # ========================
@@ -98,12 +100,14 @@ for i in tasks:
     problem += pulp.lpSum(y[i][p] for p in partitions) == 1, f"OnePartition_{i}"
 
 # ========================
-# (10) 任务依赖约束：S[job] >= E[dep_job]
+# (10) 任务依赖约束：S[job] >= E[dep_job] + cpu_path_length
 # Dependency: if job depends on dep_job, job cannot start before dep_job finishes
 # ========================
-for job, deps in gpu_deps.items():
-    for dep_job in deps:
-        problem += S[job] >= E[dep_job], f"Dep_{dep_job}_{job}"
+for job, dep_dict in gpu_deps.items():
+    for dep_job, meta_info in dep_dict.items():
+        cpl = meta_info['cpu_path_length']  # 提取 cpu_path_length
+        # 添加： S[job] >= E[dep_job] + cpu_path_length
+        problem += S[job] >= E[dep_job] + cpl, f"Dep_{dep_job}_to_{job}"
 
 # ========================
 # (11) 约束：初始时间
