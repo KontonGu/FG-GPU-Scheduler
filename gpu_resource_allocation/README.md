@@ -22,8 +22,7 @@ This script is designed for scheduling multiple tasks on a GPU. It uses **piecew
     #某些 独立的GPU 任务需要指定初始时间，可在 `initial_time` 中进行设定
     initial_time = {
          2: 0,
-         5: 0,
-         7: 0
+         5: 0
      }
     # 依赖关系链表，后续会生成例如S[7] >= E[5] + cpu_path_length(两个GPU之间最长的CPU路径)
     gpu_deps = {
