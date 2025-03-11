@@ -50,19 +50,10 @@ gpu_deps = {
 problem = pulp.LpProblem("GPU_Partition_Scheduling_with_Piecewise_and_Parallel", pulp.LpMinimize)
 
 # ========================
-# (6) 计算串行总时长 sum_serial_40 并定义 M
-# Compute the total serialized time at x=40, use it as upper bound for M
+# (6) 定义 M（去掉了用 sum_serial_40 作为上界的逻辑）
+# Define M (removing sum_serial_40 as an upper bound)
 # ========================
-sum_serial_40 = 0
-for i in tasks:
-    # 在 f_data[i] 中查找 x=40 时的执行时间 / Find the runtime when x=40 in f_data[i]
-    for (x_val, f_val) in f_data[i]:
-        if x_val == 40:
-            sum_serial_40 += f_val
-            break
-
-# 定义 M 为 [0, sum_serial_40] 之间的变量 / M in [0, sum_serial_40]
-M = pulp.LpVariable("M", lowBound=0, upBound=sum_serial_40)
+M = pulp.LpVariable("M", lowBound=0)
 
 # ========================
 # (7) 定义其它变量
@@ -121,42 +112,40 @@ for i in tasks:
 # (12) 分段线性化：F[i,p] 表示任务 i 分配到分区 p 时的执行时间
 # Piecewise linear constraints for F[i,p], based on x[p]
 # ========================
+# u[i,p,k]：表示使用分段k / Binary var indicating which segment k is used
+u = {}
 for i in tasks:
     segments = f_data[i]
     num_segments = len(segments) - 1
-
-    # u[i,p,k]：表示使用分段k / Binary var indicating which segment k is used
-    u = {p: pulp.LpVariable.dicts(f"u_{i}_{p}", range(num_segments), cat=pulp.LpBinary)
-         for p in partitions}
-
+    u[i] = {}
     for p in partitions:
+        u[i][p] = pulp.LpVariable.dicts(f"u_{i}_{p}", range(num_segments), cat=pulp.LpBinary)
+
         # 只能选其中一段（如果任务 i 分配到 p） / Exactly one segment if assigned
-        problem += pulp.lpSum(u[p][k] for k in range(num_segments)) == y[i][p], f"SegmentSum_{i}_{p}"
+        problem += pulp.lpSum(u[i][p][k] for k in range(num_segments)) == y[i][p], f"SegmentSum_{i}_{p}"
 
         for k in range(num_segments):
             x_left, f_left = segments[k]
             x_right, f_right = segments[k+1]
             slope = (f_right - f_left) / (x_right - x_left)
 
-            # 区间限制：当 u[p][k] = 1 时，x[p] 应落在 [x_left, x_right]
-            # If u[p][k] = 1, x[p] must be within [x_left, x_right]
-            problem += x[p] >= x_left - bigM * (1 - u[p][k])
-            problem += x[p] <= x_right + bigM * (1 - u[p][k])
+            # 区间限制：当 u[i][p][k] = 1 时，x[p] 应落在 [x_left, x_right]
+            problem += x[p] >= x_left - bigM * (1 - u[i][p][k])
+            problem += x[p] <= x_right + bigM * (1 - u[i][p][k])
 
-            # F[i][p] 的线性逼近 / Force F[i][p] to match the piecewise slope
+            # 线性逼近约束
             expr_segment = f_left + slope * (x[p] - x_left)
-            problem += F[i][p] >= expr_segment - bigM * (1 - u[p][k])
-            problem += F[i][p] <= expr_segment + bigM * (1 - u[p][k])
+            problem += F[i][p] >= expr_segment - bigM * (1 - u[i][p][k])
+            problem += F[i][p] <= expr_segment + bigM * (1 - u[i][p][k])
 
 # ========================
 # (13) 约束：E[i] = S[i] + ∑ F[i,p] (当 y[i,p] = 1 时生效)
 # E[i] = S[i] + sum(F[i,p]) for the chosen partition(s)
 # ========================
 for i in tasks:
-    # E[i] 等于开始时间加上所有分区的执行时间之和 / E[i] = S[i] + sum of F[i][p]
     problem += E[i] == S[i] + pulp.lpSum(F[i][p] for p in partitions), f"EndTime_{i}"
 
-    # 若 y[i,p] = 0，则 F[i][p] 不影响 E[i]（通过 bigM 松弛） / If y[i,p] = 0, we ignore F[i][p] for E[i]
+    # 若 y[i,p] = 0，则 F[i][p] 不影响 E[i]（通过 bigM 松弛）
     for p in partitions:
         problem += (E[i] - S[i] - F[i][p]) <= bigM * (1 - y[i][p])
         problem += (E[i] - S[i] - F[i][p]) >= -bigM * (1 - y[i][p])
@@ -172,16 +161,15 @@ for p in partitions:
     for i in tasks:
         for j in tasks:
             if i < j:
-                # w[i,j,p] = y[i,p] * y[j,p] / Both tasks i and j assigned to p
+                # w[i,j,p] = y[i,p] * y[j,p]
                 problem += w[i][j][p] <= y[i][p]
                 problem += w[i][j][p] <= y[j][p]
                 problem += w[i][j][p] >= (y[i][p] + y[j][p] - 1)
 
                 # z[i][j][p] + z[j][i][p] = w[i][j][p]
-                # If both tasks share partition p, then exactly one of them is first
                 problem += z[i][j][p] + z[j][i][p] == w[i][j][p]
 
-                # z[i][j][p] = 1 => S[j] >= E[i] / If i is before j, S[j]>=E[i]
+                # 如果 i 在 j 前面，S[j]>=E[i]
                 problem += S[j] >= E[i] - bigM * (1 - z[i][j][p])
                 problem += S[i] >= E[j] - bigM * (1 - z[j][i][p])
 
@@ -200,7 +188,7 @@ problem.setObjective(M)
 
 # ========================
 # (17) 求解
-# Solve the LP problem using CBC solver
+# Solve the LP problem
 # ========================
 solver = pulp.PULP_CBC_CMD(msg=1)
 problem.solve(solver)
@@ -235,6 +223,6 @@ for i in tasks:
         print(f"Task {i} was not assigned to any partition!")
 
 print("------------------------------------")
-print(f"sum_serial_40 (作为上界 / used as upper bound) = {sum_serial_40}")
 print("Makespan =", pulp.value(M))
+
 
